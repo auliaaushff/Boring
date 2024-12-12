@@ -21,7 +21,7 @@ DHT dht(DHTPIN, DHTTYPE);
 
 // Pin configurations
 #define BUZZER D8
-#define KIPAS D1
+#define LAMPU D1
 #define HEATER D0
 #define TRIGPIN D5
 #define ECHOPIN D6
@@ -39,9 +39,9 @@ float distance = 0.0;
 bool status = false; // Status to indicate proximity
 
 // Timer durations in milliseconds
-const unsigned long TIMER_1_MINUTE = 60000;
 const unsigned long TIMER_3_MINUTES = 180000;
 const unsigned long TIMER_5_MINUTES = 300000;
+const unsigned long TIMER_7_MINUTES = 420000; 
 
 // Function declarations
 void readSensors();
@@ -62,10 +62,10 @@ void setup() {
   pinMode(TRIGPIN, OUTPUT);
   pinMode(ECHOPIN, INPUT);
   pinMode(BUZZER, OUTPUT);
-  pinMode(KIPAS, OUTPUT);
+  pinMode(LAMPU, OUTPUT);
   pinMode(HEATER, OUTPUT);
 
-  digitalWrite(KIPAS, HIGH); 
+  digitalWrite(LAMPU, HIGH); 
   digitalWrite(HEATER, HIGH);
 
   // Connect to WiFi
@@ -99,8 +99,6 @@ void loop() {
 
   // Handle timer and actuators
   handleTimer();
-
-  delay(1000);
 }
 
 // Function to read sensors and display distance
@@ -115,7 +113,7 @@ void readSensors() {
 
   distance = getUltrasonicDistance();
 
-  if (distance < 20) {
+  if (distance < 16) {
     status = true;
     Serial.println("Proximity detected! Status: TRUE");
   } else {
@@ -198,9 +196,9 @@ unsigned long getTimerDurationFromFirebase() {
   if (Firebase.RTDB.getInt(&fbdo, "/sensor/timer")) {
     int timerValue = fbdo.intData();
     switch (timerValue) {
-      case 1: return TIMER_1_MINUTE;
       case 3: return TIMER_3_MINUTES;
       case 5: return TIMER_5_MINUTES;
+      case 7: return TIMER_7_MINUTES;
       default: return 0; // Invalid duration
     }
     Serial.println(timerValue);
@@ -213,7 +211,7 @@ unsigned long getTimerDurationFromFirebase() {
 
 // Function to control actuators
 void controlActuators(bool state) {
-  digitalWrite(KIPAS, state ? LOW : HIGH);
+  digitalWrite(LAMPU, state ? LOW : HIGH);
   digitalWrite(HEATER, state ? LOW : HIGH);
   if (state) {
     tone(BUZZER, 500);
